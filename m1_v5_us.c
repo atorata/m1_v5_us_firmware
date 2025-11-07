@@ -526,7 +526,7 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
         case RGB_SPI: {
             if (record->event.pressed) {
                 if (rgb_matrix_get_speed() >= (RGB_MATRIX_SPD_STEP * 5)) {
-                    rgb_blink_dir();
+                    // rgb_blink_dir(); // Removed for seamless transitions
                 }
             }
         } break;
@@ -534,19 +534,19 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
             if (record->event.pressed) {
                 if (rgb_matrix_get_speed() <= RGB_MATRIX_SPD_STEP * 2) {
                     if (rgb_matrix_get_speed() != RGB_MATRIX_SPD_STEP)
-                        rgb_blink_dir();
+                        // rgb_blink_dir(); // Removed for seamless transitions
                     rgb_matrix_set_speed(RGB_MATRIX_SPD_STEP);
 
                     return false;
                 }
-                rgb_blink_dir();
+                // rgb_blink_dir(); // Removed for seamless transitions
             }
         } break;
         case RGB_VAI: {
             if (record->event.pressed) {
                 rgb_matrix_enable();
                 gpio_write_pin_high(LED_POWER_EN_PIN);
-                if (rgb_matrix_get_val() != RGB_MATRIX_MAXIMUM_BRIGHTNESS) rgb_blink_dir();
+                // if (rgb_matrix_get_val() != RGB_MATRIX_MAXIMUM_BRIGHTNESS) rgb_blink_dir(); // Removed for seamless transitions
             }
         } break;
         case RGB_VAD: {
@@ -557,7 +557,7 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
                         rgb_matrix_set_color(i, 0, 0, 0);
                     }
                 }
-                if (rgb_matrix_get_val() != 0) rgb_blink_dir();
+                // if (rgb_matrix_get_val() != 0) rgb_blink_dir(); // Removed for seamless transitions
             }
         } break;
         case RGB_SAI: {
@@ -565,9 +565,9 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
                 uint8_t index;
                 index = record_color_hsv(true);
                 if ((index != 0xFF)) {
-                    rgb_blink_dir();
+                    // rgb_blink_dir(); // Removed for seamless transitions
                 }
-                
+
             }
             return false;
         } break;
@@ -576,9 +576,9 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
                 uint8_t index;
                 index = record_color_hsv(false);
                 if (index != 0xFF) {
-                    rgb_blink_dir();
+                    // rgb_blink_dir(); // Removed for seamless transitions
                 }
-               
+
             }
             return false;
         } break;
@@ -662,7 +662,7 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
         } break;
         case RGB_MOD: {
             if (record->event.pressed) {
-                rgb_blink_dir();
+                // rgb_blink_dir(); // Removed for seamless mode transition
                 if (rgb_matrix_get_mode() == RGB_MATRIX_CUSTOM_RGBR_PLAY) {
                     if (rgbrec_is_started()) {
                         rgbrec_read_current_channel(confinfo.record_channel);
@@ -1156,6 +1156,9 @@ void nkr_indicators_hook(uint8_t index) {
     }
 }
 
+// RGB indicator optimization: track active indicators to skip unnecessary processing
+static uint8_t active_indicator_count = 0;
+
 void rgb_matrix_hs_indicator_set(uint8_t index, RGB rgb, uint32_t interval, uint8_t times) {
 
     for (int i = 0; i < HS_RGB_INDICATOR_COUNT; i++) {
@@ -1171,6 +1174,7 @@ void rgb_matrix_hs_indicator_set(uint8_t index, RGB rgb, uint32_t interval, uint
             else {
                 hs_rgb_indicators[i].blink_cb = nkr_indicators_hook;
             }
+            active_indicator_count++;
             break;
         }
     }
@@ -1182,12 +1186,15 @@ void rgb_matrix_hs_set_remain_time(uint8_t index, uint8_t remain_time) {
         if (hs_rgb_indicators[i].index == index) {
             hs_rgb_indicators[i].times  = 0;
             hs_rgb_indicators[i].active = false;
+            if (active_indicator_count > 0) active_indicator_count--;
             break;
         }
     }
 }
 
 void rgb_matrix_hs_indicator(void) {
+    // Skip processing if no active indicators
+    if (active_indicator_count == 0) return;
 
     for (int i = 0; i < HS_RGB_INDICATOR_COUNT; i++) {
         if (hs_rgb_indicators[i].active) {
@@ -1201,6 +1208,7 @@ void rgb_matrix_hs_indicator(void) {
                 if (hs_rgb_indicators[i].times <= 0) {
                     hs_rgb_indicators[i].active = false;
                     hs_rgb_indicators[i].timer  = 0x00;
+                    if (active_indicator_count > 0) active_indicator_count--;
                     if (hs_rgb_indicators[i].blink_cb != NULL)
                         hs_rgb_indicators[i].blink_cb(i);
                     continue;

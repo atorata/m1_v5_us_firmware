@@ -76,6 +76,10 @@
 #define RGB_MATRIX_FRAMEBUFFER_EFFECTS
 #define RGB_MATRIX_KEYPRESSES
 
+// RGB processing optimizations for faster key response
+#define RGB_MATRIX_LED_PROCESS_LIMIT 8
+#define RGB_MATRIX_LED_FLUSH_LIMIT 16
+
 /* WS2812 */
 #define WS2812_SPI_DRIVER  SPIDM2
 #define WS2812_SPI_DIVISOR 32
