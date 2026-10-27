@@ -1,5 +1,7 @@
 # MonsGeek / AKKO M1 V5 (US) — custom QMK firmware
 
+**English** | [Türkçe](readme.tr.md)
+
 Modified firmware for the M1 V5 US (VIA, wired + Bluetooth + 2.4G).
 
 Changes compared to the stock MonsGeek firmware:
@@ -73,6 +75,16 @@ qmk compile -kb monsgeek/m1_v5/m1_v5_us -km default
 If `qmk compile` complains about a missing compiler, run `qmk doctor`. It offers to install `arm-none-eabi-gcc`.
 
 To use your own keymap, copy `keymaps/default` to `keymaps/<name>` and build with `-km <name>`.
+
+### Windows (WSL2)
+
+`build.sh` works in WSL2 (for example Ubuntu). Keep these in mind:
+
+- **Clone inside the Linux file system** (`~/...`), not under `/mnt/c/...`. On `/mnt/c` the build is much slower, and file permissions and line endings cause problems.
+- **Docker:** either install Docker Desktop and enable *Settings → Resources → WSL integration* for your distro, or install Docker Engine inside WSL. Check with `docker run --rm hello-world`.
+- **Without Docker:** `./build.sh --native` also works in WSL once the QMK CLI is installed there (`qmk doctor` installs the toolchain).
+- **Flashing:** WSL does not see USB devices by default. The simplest way is to flash from Windows: open the `.bin` in [QMK Toolbox](https://github.com/qmk/qmk_toolbox/releases). The file is reachable from Windows Explorer at `\\wsl$\<distro>\home\<user>\qmk-monsgeek\`. Flashing from inside WSL is possible with [usbipd-win](https://github.com/dorssel/usbipd-win), but it is more setup.
+- **`/usr/bin/env: 'bash\r': No such file`:** the repo was checked out with Windows (CRLF) line endings. Clone it inside WSL, or run `git config core.autocrlf input` and clone again.
 
 ---
 
