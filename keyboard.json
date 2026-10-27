@@ -79,6 +79,9 @@
         },
         {
             "key": "HS_CT_A"
+        },
+        {
+            "key": "HS_BAT_IND"
         }
     ],
     "dynamic_keymap": {

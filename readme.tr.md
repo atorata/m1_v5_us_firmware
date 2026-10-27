@@ -21,6 +21,8 @@ Standart MonsGeek firmware'ine göre farklar:
 - **Daha parlak RGB:** azami parlaklık 104'ten 200'e çıkarıldı.
 - **Daha akıcı RGB geçişleri:** RGB hız, parlaklık, renk ve mod değişikliklerinde yanıp sönme yok. RGB işleme hafifletildi, bu da tuş tepkisini hızlandırıyor.
 - Varsayılan keymap'te **fare tuşları** açık.
+- **Fn + G** sürekli yanan pil göstergelerini (şarj ışığı, düşük pil uyarısı) açar ya da kapatır. Ayar kaydedilir. Yeşil yanıp sönme açık, kırmızı kapalı demek. Fn + Space ile gösterilen pil seviyesi ve %0'da otomatik uyku bundan etkilenmez.
+- **Fabrika ayarına dönüş NKRO'yu korur:** Fn + ` (3 sn basılı) sonrasında klavye, kablo çıkarılıp takılana kadar 6 tuşla sınırlı kalmıyor.
 
 Bu depo **yalnızca klavye klasörünü** içerir ve tek başına derlenmez. Kablosuz sürücü (`keyboards/linker/wireless`) yalnızca MonsGeek'in QMK fork'unda bulunduğu için o fork gerekir.
 
@@ -33,6 +35,8 @@ Yüklemeye hazır firmware [**Releases**](https://github.com/atorata/m1_v5_us_fi
 1. En son sürümü aç ve `m1_v5_via_us_ansi_<sürüm>.bin` dosyasını indir.
 2. İstersen dosyayı yanındaki `.sha256` ile doğrula: `sha256sum -c m1_v5_via_us_ansi_<sürüm>.bin.sha256`.
 3. [Yükleme (flash)](#yükleme-flash) bölümündeki gibi klavyeye yükle.
+
+**Pre-release** olarak işaretlenen sürümler (`v1.2-alpha` gibi etiketler) henüz bir klavyede denenmedi; yalnızca denemeye yardım etmek istiyorsan kullan.
 
 Her sürümü GitHub Actions bu depodan, aşağıda anlatılan `build.sh` ile otomatik derler. Henüz sürüm olmamış commit'lerin derlemeleri, [Actions](https://github.com/atorata/m1_v5_us_firmware/actions) sayfasındaki her çalışmaya `firmware` adıyla eklenir; bunları indirmek için GitHub'a giriş yapmış olman gerekir.
 
