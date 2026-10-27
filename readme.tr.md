@@ -232,3 +232,8 @@ konuşuyor. VIA ile aynı USB kanalını kullanıyor; VIA çalışmaya devam edi
 
 - Orijinal klavye desteği: [yangzheng20003](https://github.com/yangzheng20003) / MonsGeek.
 - QMK: [qmk.fm](https://qmk.fm). Orijinal dosyalar gibi GPL-2.0-or-later lisanslıdır.
+- Kablosuz sürücü bağlantısı (`wls/`): [`MonsGeek/qmk_firmware`](https://github.com/MonsGeek/qmk_firmware) deposunun `wireless` dalından değiştirilmeden alındı.
+
+## Lisans
+
+GPL-2.0-or-later. Tam metin için [`LICENSE`](LICENSE) dosyasına bakın. Her kaynak dosya kendi orijinal telif bildirimini korur. Yayımlanan her `.bin` dosyasının kaynağı, bu depodaki ilgili etiketli commit'tir ve `MonsGeek/qmk_firmware` (`wireless` dalı) ile derlenir.
