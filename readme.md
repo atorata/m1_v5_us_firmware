@@ -15,6 +15,18 @@ This repository holds **only the keyboard folder**. It does not build on its own
 
 ---
 
+## Download (no build needed)
+
+Ready-to-flash firmware is on the [**Releases**](https://github.com/atorata/m1_v5_us_firmware/releases) page.
+
+1. Open the latest release and download `m1_v5_us_<version>.bin`.
+2. Optionally, check it against the `.sha256` file next to it: `sha256sum -c m1_v5_us_<version>.bin.sha256`.
+3. Flash it as described in [Flashing](#flashing).
+
+Every release is built automatically by GitHub Actions from this repo, using the same `build.sh` described below. Builds for unreleased commits are attached as a `firmware` artifact to each run on the [Actions](https://github.com/atorata/m1_v5_us_firmware/actions) page; you need to be signed in to GitHub to download those.
+
+---
+
 ## Building
 
 ### What you need
@@ -68,7 +80,7 @@ git clone --depth 1 --branch wireless --single-branch \
     https://github.com/MonsGeek/qmk_firmware.git ~/qmk-monsgeek
 cd ~/qmk-monsgeek
 git submodule update --init --depth 1 lib/chibios lib/chibios-contrib lib/printf lib/lufa
-tar -C /path/to/m1_v5_us_firmware --exclude=.git --exclude=build.sh -cf - . | tar -C keyboards/monsgeek/m1_v5/m1_v5_us -xf -
+tar -C /path/to/m1_v5_us_firmware --exclude=.git --exclude=.github --exclude=build.sh -cf - . | tar -C keyboards/monsgeek/m1_v5/m1_v5_us -xf -
 qmk compile -kb monsgeek/m1_v5/m1_v5_us -km default
 ```
 

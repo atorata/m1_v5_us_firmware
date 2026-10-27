@@ -40,7 +40,7 @@ git -C "$QMK" submodule update --init --depth 1 lib/chibios lib/chibios-contrib 
 # 3. Reset the stock keyboard folder, then copy this repo over it
 echo ">> copying $FW -> keyboards/$KB"
 git -C "$QMK" checkout -q -- "keyboards/$KB"
-tar -C "$FW" --exclude=.git --exclude=build.sh -cf - . | tar -C "$QMK/keyboards/$KB" -xf -
+tar -C "$FW" --exclude=.git --exclude=.github --exclude=build.sh -cf - . | tar -C "$QMK/keyboards/$KB" -xf -
 
 # 4. Compile
 echo ">> compiling ($MODE, keymap: $KEYMAP)"

@@ -1,0 +1,60 @@
+name: Build firmware
+
+# Every push / PR: compile with build.sh and keep the .bin as a workflow artifact.
+# Pushing a tag like v1.1: also publish a GitHub Release with the .bin attached.
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build with build.sh (Docker)
+        run: ./build.sh
+
+      - name: Name the binary after this build
+        id: bin
+        run: |
+          ref="${GITHUB_REF_NAME//\//-}"
+          [ "$GITHUB_REF_TYPE" = tag ] || ref="${GITHUB_SHA::7}"
+          name="m1_v5_us_${ref}.bin"
+          cp "$HOME/qmk-monsgeek/monsgeek_m1_v5_m1_v5_us_default.bin" "$name"
+          sha256sum "$name" > "$name.sha256"
+          echo "name=$name" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: firmware
+          path: |
+            ${{ steps.bin.outputs.name }}
+            ${{ steps.bin.outputs.name }}.sha256
+          if-no-files-found: error
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: firmware
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" m1_v5_us_*.bin m1_v5_us_*.bin.sha256 \
+            --repo "$GITHUB_REPOSITORY" \
+            --title "M1 V5 US firmware $GITHUB_REF_NAME" \
+            --generate-notes

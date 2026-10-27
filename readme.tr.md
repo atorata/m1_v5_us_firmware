@@ -15,6 +15,18 @@ Bu depo **yalnızca klavye klasörünü** içerir ve tek başına derlenmez. Kab
 
 ---
 
+## İndirme (derlemeden)
+
+Yüklemeye hazır firmware [**Releases**](https://github.com/atorata/m1_v5_us_firmware/releases) sayfasında.
+
+1. En son sürümü aç ve `m1_v5_us_<sürüm>.bin` dosyasını indir.
+2. İstersen dosyayı yanındaki `.sha256` ile doğrula: `sha256sum -c m1_v5_us_<sürüm>.bin.sha256`.
+3. [Yükleme (flash)](#yükleme-flash) bölümündeki gibi klavyeye yükle.
+
+Her sürümü GitHub Actions bu depodan, aşağıda anlatılan `build.sh` ile otomatik derler. Henüz sürüm olmamış commit'lerin derlemeleri, [Actions](https://github.com/atorata/m1_v5_us_firmware/actions) sayfasındaki her çalışmaya `firmware` adıyla eklenir; bunları indirmek için GitHub'a giriş yapmış olman gerekir.
+
+---
+
 ## Derleme
 
 ### Neler gerekiyor
@@ -68,7 +80,7 @@ git clone --depth 1 --branch wireless --single-branch \
     https://github.com/MonsGeek/qmk_firmware.git ~/qmk-monsgeek
 cd ~/qmk-monsgeek
 git submodule update --init --depth 1 lib/chibios lib/chibios-contrib lib/printf lib/lufa
-tar -C /yol/m1_v5_us_firmware --exclude=.git --exclude=build.sh -cf - . | tar -C keyboards/monsgeek/m1_v5/m1_v5_us -xf -
+tar -C /yol/m1_v5_us_firmware --exclude=.git --exclude=.github --exclude=build.sh -cf - . | tar -C keyboards/monsgeek/m1_v5/m1_v5_us -xf -
 qmk compile -kb monsgeek/m1_v5/m1_v5_us -km default
 ```
 
