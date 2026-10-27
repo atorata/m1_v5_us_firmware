@@ -54,7 +54,15 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
+          # A tag with a suffix (v1.2-alpha, v1.2-beta.1, ...) is published as a pre-release:
+          # GitHub never marks it "Latest", so README's "latest release" link stays on the stable one.
+          extra=()
+          case "$GITHUB_REF_NAME" in
+            *-*)
+              extra=(--prerelease --notes "⚠ **Pre-release ($GITHUB_REF_NAME): not yet tested on a keyboard.** Use the latest stable release unless you want to help test.")
+              ;;
+          esac
           gh release create "$GITHUB_REF_NAME" m1_v5_via_us_ansi_*.bin m1_v5_via_us_ansi_*.bin.sha256 \
             --repo "$GITHUB_REPOSITORY" \
             --title "M1 V5 VIA (US / ANSI) firmware $GITHUB_REF_NAME" \
-            --generate-notes
+            --generate-notes "${extra[@]}"

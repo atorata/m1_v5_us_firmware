@@ -36,6 +36,8 @@ Yüklemeye hazır firmware [**Releases**](https://github.com/atorata/m1_v5_us_fi
 2. İstersen dosyayı yanındaki `.sha256` ile doğrula: `sha256sum -c m1_v5_via_us_ansi_<sürüm>.bin.sha256`.
 3. [Yükleme (flash)](#yükleme-flash) bölümündeki gibi klavyeye yükle.
 
+**Pre-release** olarak işaretlenen sürümler (`v1.2-alpha` gibi etiketler) henüz bir klavyede denenmedi; yalnızca denemeye yardım etmek istiyorsan kullan.
+
 Her sürümü GitHub Actions bu depodan, aşağıda anlatılan `build.sh` ile otomatik derler. Henüz sürüm olmamış commit'lerin derlemeleri, [Actions](https://github.com/atorata/m1_v5_us_firmware/actions) sayfasındaki her çalışmaya `firmware` adıyla eklenir; bunları indirmek için GitHub'a giriş yapmış olman gerekir.
 
 ---

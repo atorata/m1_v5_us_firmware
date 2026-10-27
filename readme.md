@@ -36,6 +36,8 @@ Ready-to-flash firmware is on the [**Releases**](https://github.com/atorata/m1_v
 2. Optionally, check it against the `.sha256` file next to it: `sha256sum -c m1_v5_via_us_ansi_<version>.bin.sha256`.
 3. Flash it as described in [Flashing](#flashing).
 
+Releases marked **Pre-release** (tags like `v1.2-alpha`) have not been tested on a keyboard yet; use them only if you want to help test.
+
 Every release is built automatically by GitHub Actions from this repo, using the same `build.sh` described below. Builds for unreleased commits are attached as a `firmware` artifact to each run on the [Actions](https://github.com/atorata/m1_v5_us_firmware/actions) page; you need to be signed in to GitHub to download those.
 
 ---
