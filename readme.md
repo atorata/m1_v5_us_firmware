@@ -31,7 +31,7 @@ The build has two sources:
 - **QMK tree:** [`MonsGeek/qmk_firmware`](https://github.com/MonsGeek/qmk_firmware), branch **`wireless`**. Upstream QMK will **not** work.
 - **This repo:** copied over `keyboards/monsgeek/m1_v5/m1_v5_us` in that tree.
 
-Only 3 of the QMK submodules are needed: `lib/chibios`, `lib/chibios-contrib` and `lib/printf`. Fetching only these takes about 20 seconds. A full `qmk setup` downloads all of them (~1 GB).
+Only 4 of the QMK submodules are needed: `lib/chibios`, `lib/chibios-contrib`, `lib/printf` and `lib/lufa` (ChibiOS's USB stack uses LUFA's headers). Fetching only these takes about 20 seconds. A full `qmk setup` downloads all of them (~1 GB).
 
 ### One-shot build (`build.sh`)
 
@@ -46,7 +46,7 @@ cd m1_v5_us_firmware
 
 The script runs four steps:
 1. Clones MonsGeek's QMK fork, `wireless` branch, shallow, into `~/qmk-monsgeek`. This happens on the first run only.
-2. Fetches the 3 submodules listed above.
+2. Fetches the 4 submodules listed above.
 3. Resets the stock keyboard folder, then copies this repo over it.
 4. Compiles, either inside the official `ghcr.io/qmk/qmk_cli` image or with your local `qmk`.
 
@@ -67,7 +67,7 @@ python3 -m pip install --user qmk           # or follow the QMK getting-started 
 git clone --depth 1 --branch wireless --single-branch \
     https://github.com/MonsGeek/qmk_firmware.git ~/qmk-monsgeek
 cd ~/qmk-monsgeek
-git submodule update --init --depth 1 lib/chibios lib/chibios-contrib lib/printf
+git submodule update --init --depth 1 lib/chibios lib/chibios-contrib lib/printf lib/lufa
 tar -C /path/to/m1_v5_us_firmware --exclude=.git --exclude=build.sh -cf - . | tar -C keyboards/monsgeek/m1_v5/m1_v5_us -xf -
 qmk compile -kb monsgeek/m1_v5/m1_v5_us -km default
 ```
@@ -109,9 +109,10 @@ The MCU is a **WB32** and the bootloader is `wb32-dfu`. Flash over a **USB cable
 |---|---|
 | `keyboards/linker/wireless/wireless.mk: No such file` | You are using upstream QMK. Use `MonsGeek/qmk_firmware`, branch `wireless`. |
 | `undefined reference to 'im_test_rate_flag'` | Old copy of `m1_v5_us.c`. Pull the latest version of this repo; newer MonsGeek branches need this variable. |
-| `lib/chibios/... No such file` / `ChibiOS not found` | Submodules missing. Run the `git submodule update ...` line above. |
+| `lib/chibios/...` or `lib/lufa/...: No such file` / `ChibiOS not found` | Submodules missing. Run the `git submodule update ...` line above. |
 | `arm-none-eabi-gcc: not found` | No toolchain. Use the Docker way, or run `qmk doctor`. |
-| Docker: `permission denied` on output files | Remove `--user ...` from the `docker run` line, or `chown` the QMK tree back to yourself. |
+| `Could not find module appdirs!` / `Please run ... pip install -r /qmk_firmware/requirements.txt` | The latest QMK image is newer than the MonsGeek fork, which still needs older Python packages. Pull the latest `build.sh`, which installs the fork's requirements before compiling. With `--native`, run `python3 -m pip install -r ~/qmk-monsgeek/requirements.txt` once. |
+| Docker: `permission denied` on files in `~/qmk-monsgeek` | Left over from an older build run. Run `sudo chown -R "$(id -u):$(id -g)" ~/qmk-monsgeek`. |
 | Keyboard not detected for flashing | It is not in the bootloader, or it is in BT/2.4G mode. Use the cable and enter the bootloader again. |
 
 ---
