@@ -1,30 +1,122 @@
-# M1 V5 VIA
+# MonsGeek / AKKO M1 V5 (US) — custom QMK firmware
 
-* Keyboard Maintainer: [yangzheng20003](https://github.com/yangzheng20003)
-* Hardware Supported: M1 V5 VIA
-* Hardware Availability: M1 V5 VIA
+**English** | [Türkçe](readme.tr.md)
 
-Make example for this keyboard (after setting up your build environment):
+Modified firmware for the M1 V5 US (VIA, wired + Bluetooth + 2.4G).
 
-    make monsgeek/m1_v5/m1_v5_us/:default
-        
-Flashing example for this keyboard:
+Changes compared to the stock MonsGeek firmware:
 
-    make monsgeek/m1_v5/m1_v5_us/:default
+- **Faster multi-key response:** per-key eager debounce (`sym_eager_pk`) instead of QMK's global deferred default. Each key press is sent immediately, and other keys no longer delay it.
+- **Brighter RGB:** maximum brightness raised from 104 to 200.
+- **Faster RGB transitions:** no blink on RGB speed, brightness, hue or mode changes, and lighter RGB processing for quicker key response.
+- **Mouse keys** enabled in the default keymap.
 
-To reset the board into bootloader mode, do one of the following:
+This repository holds **only the keyboard folder**. It does not build on its own: it needs MonsGeek's QMK fork, because the wireless driver (`keyboards/linker/wireless`) is only there.
 
-* Hold the Reset switch mounted on the bottom side of the PCB while connecting the USB cable
-* Hold the Escape key while connecting the USB cable (also erases persistent settings)
-* Fn+R_Shift+Esc will reset the board to bootloader mode if you have flashed the default QMK keymap
+---
 
-See the [build environment setup](https://docs.qmk.fm/#/getting_started_build_tools) and the [make instructions](https://docs.qmk.fm/#/getting_started_make_guide) for more information. Brand new to QMK? Start with our [Complete Newbs Guide](https://docs.qmk.fm/#/newbs).
+## Building
 
-## Bootloader
+### What you need
 
-Enter the bootloader in 3 ways:
+| | Docker way (recommended) | Native way |
+|---|---|---|
+| OS | Linux, macOS, or Windows with WSL2 | Linux, macOS, or Windows with MSYS2/WSL2 |
+| Tools | `git`, `tar`, Docker | `git`, `tar`, [QMK CLI](https://docs.qmk.fm/newbs_getting_started) (installs the `arm-none-eabi` toolchain) |
+| Disk | ~1 GB (QMK image) + ~200 MB (source) | ~200 MB (source) + toolchain |
+| Network | Needed for the first build only | Needed for the first build only |
 
-* **Bootmagic reset**: Hold down the key at (0,0) in the matrix (usually the top left key or Escape) and plug in the keyboard
-* **Physical reset button**: Briefly press the button on the back of the PCB - some may have pads you must short instead
-* **Keycode in layout**: Press the key mapped to `QK_BOOT` if it is available
+The build has two sources:
 
+- **QMK tree:** [`MonsGeek/qmk_firmware`](https://github.com/MonsGeek/qmk_firmware), branch **`wireless`**. Upstream QMK will **not** work.
+- **This repo:** copied over `keyboards/monsgeek/m1_v5/m1_v5_us` in that tree.
+
+Only 3 of the QMK submodules are needed: `lib/chibios`, `lib/chibios-contrib` and `lib/printf`. Fetching only these takes about 20 seconds. A full `qmk setup` downloads all of them (~1 GB).
+
+### One-shot build (`build.sh`)
+
+The repo ships a [`build.sh`](build.sh) script that does everything in one go:
+
+```bash
+git clone https://github.com/atorata/m1_v5_us_firmware.git
+cd m1_v5_us_firmware
+./build.sh            # Docker (recommended): no local toolchain needed
+./build.sh --native   # use your locally installed QMK CLI instead
+```
+
+The script runs four steps:
+1. Clones MonsGeek's QMK fork, `wireless` branch, shallow, into `~/qmk-monsgeek`. This happens on the first run only.
+2. Fetches the 3 submodules listed above.
+3. Resets the stock keyboard folder, then copies this repo over it.
+4. Compiles, either inside the official `ghcr.io/qmk/qmk_cli` image or with your local `qmk`.
+
+The first run takes a minute or two (clone, submodules and image pull). After that, a rebuild only copies the files and compiles.
+
+The output is `~/qmk-monsgeek/monsgeek_m1_v5_m1_v5_us_default.bin`.
+
+Two environment variables change the defaults:
+- `QMK_DIR`: where the QMK tree lives.
+- `KEYMAP`: which keymap to build.
+
+Example: `KEYMAP=mine QMK_DIR=~/src/qmk ./build.sh`.
+
+### Manual steps (no script)
+
+```bash
+python3 -m pip install --user qmk           # or follow the QMK getting-started guide for your OS
+git clone --depth 1 --branch wireless --single-branch \
+    https://github.com/MonsGeek/qmk_firmware.git ~/qmk-monsgeek
+cd ~/qmk-monsgeek
+git submodule update --init --depth 1 lib/chibios lib/chibios-contrib lib/printf
+tar -C /path/to/m1_v5_us_firmware --exclude=.git --exclude=build.sh -cf - . | tar -C keyboards/monsgeek/m1_v5/m1_v5_us -xf -
+qmk compile -kb monsgeek/m1_v5/m1_v5_us -km default
+```
+
+If `qmk compile` complains about a missing compiler, run `qmk doctor`. It offers to install `arm-none-eabi-gcc`.
+
+To use your own keymap, copy `keymaps/default` to `keymaps/<name>` and build with `-km <name>`.
+
+### Windows (WSL2)
+
+`build.sh` works in WSL2 (for example Ubuntu). Keep these in mind:
+
+- **Clone inside the Linux file system** (`~/...`), not under `/mnt/c/...`. On `/mnt/c` the build is much slower, and file permissions and line endings cause problems.
+- **Docker:** either install Docker Desktop and enable *Settings → Resources → WSL integration* for your distro, or install Docker Engine inside WSL. Check with `docker run --rm hello-world`.
+- **Without Docker:** `./build.sh --native` also works in WSL once the QMK CLI is installed there (`qmk doctor` installs the toolchain).
+- **Flashing:** WSL does not see USB devices by default. The simplest way is to flash from Windows: open the `.bin` in [QMK Toolbox](https://github.com/qmk/qmk_toolbox/releases). The file is reachable from Windows Explorer at `\\wsl$\<distro>\home\<user>\qmk-monsgeek\`. Flashing from inside WSL is possible with [usbipd-win](https://github.com/dorssel/usbipd-win), but it is more setup.
+- **`/usr/bin/env: 'bash\r': No such file`:** the repo was checked out with Windows (CRLF) line endings. Clone it inside WSL, or run `git config core.autocrlf input` and clone again.
+
+---
+
+## Flashing
+
+The MCU is a **WB32** and the bootloader is `wb32-dfu`. Flash over a **USB cable**; wireless modes cannot flash.
+
+1. **Enter the bootloader** (any of these):
+   - **Fn + Right Shift + Esc** with the keyboard plugged in. ⚠ This also resets settings (VIA keymap, RGB).
+   - Hold **Esc** while plugging in the cable (bootmagic). ⚠ This also resets settings.
+   - Press the **reset button** on the PCB.
+2. **Flash the `.bin`** (any of these):
+   - [QMK Toolbox](https://github.com/qmk/qmk_toolbox/releases): open the `.bin` and click *Flash*.
+   - Command line, from the QMK tree: `qmk flash -kb monsgeek/m1_v5/m1_v5_us -km default`. This needs `wb32-dfu-updater_cli`; `qmk doctor` / `qmk setup` install it.
+3. Unplug and replug. Because entering the bootloader resets settings, reapply your VIA keymap and RGB settings.
+
+---
+
+## Troubleshooting
+
+| Error | Cause / fix |
+|---|---|
+| `keyboards/linker/wireless/wireless.mk: No such file` | You are using upstream QMK. Use `MonsGeek/qmk_firmware`, branch `wireless`. |
+| `undefined reference to 'im_test_rate_flag'` | Old copy of `m1_v5_us.c`. Pull the latest version of this repo; newer MonsGeek branches need this variable. |
+| `lib/chibios/... No such file` / `ChibiOS not found` | Submodules missing. Run the `git submodule update ...` line above. |
+| `arm-none-eabi-gcc: not found` | No toolchain. Use the Docker way, or run `qmk doctor`. |
+| Docker: `permission denied` on output files | Remove `--user ...` from the `docker run` line, or `chown` the QMK tree back to yourself. |
+| Keyboard not detected for flashing | It is not in the bootloader, or it is in BT/2.4G mode. Use the cable and enter the bootloader again. |
+
+---
+
+## Credits
+
+- Original keyboard support: [yangzheng20003](https://github.com/yangzheng20003) / MonsGeek.
+- QMK: [qmk.fm](https://qmk.fm). Licensed GPL-2.0-or-later, like the original files.
