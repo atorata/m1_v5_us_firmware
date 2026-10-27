@@ -21,6 +21,8 @@ Changes compared to the stock MonsGeek firmware:
 - **Brighter RGB:** maximum brightness raised from 104 to 200.
 - **Faster RGB transitions:** no blink on RGB speed, brightness, hue or mode changes, and lighter RGB processing for quicker key response.
 - **Mouse keys** enabled in the default keymap.
+- **Fn + G** turns the always-on battery LEDs (charging light, low-battery blink) on or off. The setting is saved. A green flash means on, a red flash means off. The battery level shown with Fn + Space and the automatic sleep at 0 % are not affected.
+- **Factory reset keeps NKRO:** after Fn + ` (held 3 s), the board no longer drops to 6-key rollover until it is replugged.
 
 This repository holds **only the keyboard folder**. It does not build on its own: it needs MonsGeek's QMK fork, because the wireless driver (`keyboards/linker/wireless`) is only there.
 

@@ -21,6 +21,7 @@ typedef union {
         uint8_t last_btdevs : 3;
         uint8_t dir_flag : 1;
         uint8_t ctrl_app_flag : 1;
+        uint8_t bat_ind_off : 1; // Fn + G: hide the always-on battery LEDs
     };
 } confinfo_t;
 confinfo_t confinfo;
@@ -88,6 +89,7 @@ void eeconfig_confinfo_default(void) {
     confinfo.last_btdevs      = 1;
     confinfo.dir_flag         = 0;
     confinfo.ctrl_app_flag    = 0;
+    confinfo.bat_ind_off      = 0;
     // #ifdef WIRELESS_ENABLE
     //     confinfo.devs = DEVS_USB;
     // #endif
@@ -700,6 +702,19 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
             rk_bat_req_flag = (confinfo.devs != DEVS_USB) && record->event.pressed;
             return false;
         } break;
+        case HS_BAT_IND: {
+            if (record->event.pressed) {
+                confinfo.bat_ind_off = !confinfo.bat_ind_off;
+                // green flash = battery LEDs on, red flash = off
+                if (confinfo.bat_ind_off) {
+                    rgb_matrix_hs_indicator_set(0xFF, (RGB){0x40, 0x00, 0x00}, 250, 1);
+                } else {
+                    rgb_matrix_hs_indicator_set(0xFF, (RGB){0x00, 0x40, 0x00}, 250, 1);
+                }
+                eeconfig_confinfo_update(confinfo.raw);
+            }
+            return false;
+        } break;
         case HS_DIR: {
             if (record->event.pressed) {
                 confinfo.dir_flag = !confinfo.dir_flag;
@@ -1085,10 +1100,10 @@ void bat_indicators(void) {
     } else if (charging_state) {
 
         battery_process_time = 0;
-        rgb_matrix_set_color(HS_MATRIX_BLINK_INDEX_BAT, 0x00, 0xFF, 0x00);
+        if (!confinfo.bat_ind_off) rgb_matrix_set_color(HS_MATRIX_BLINK_INDEX_BAT, 0x00, 0xFF, 0x00);
     } else if (*md_getp_bat() <= BATTERY_CAPACITY_LOW) {
 
-        rgb_matrix_hs_bat_set(HS_MATRIX_BLINK_INDEX_BAT, (RGB){0xFF, 0x00, 0x00}, 250, 1);
+        if (!confinfo.bat_ind_off) rgb_matrix_hs_bat_set(HS_MATRIX_BLINK_INDEX_BAT, (RGB){0xFF, 0x00, 0x00}, 250, 1);
 
         if (*md_getp_bat() <= BATTERY_CAPACITY_STOP) {
             if (!battery_process_time) {
@@ -1237,8 +1252,8 @@ bool rgb_matrix_indicators_advanced_kb(uint8_t led_min, uint8_t led_max) {
     rgb_matrix_wls_indicator();
 
     if (enable_bat_indicators && !inqbat_flag && !rgbrec_is_started()) {
-        rgb_matrix_hs_bat();
-        bat_indicators();
+        if (!confinfo.bat_ind_off) rgb_matrix_hs_bat();
+        bat_indicators(); // always runs: also handles auto-sleep at 0 %
         bat_indicator_cnt = timer_read32();
     }
 

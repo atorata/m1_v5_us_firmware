@@ -21,6 +21,8 @@ Standart MonsGeek firmware'ine göre farklar:
 - **Daha parlak RGB:** azami parlaklık 104'ten 200'e çıkarıldı.
 - **Daha akıcı RGB geçişleri:** RGB hız, parlaklık, renk ve mod değişikliklerinde yanıp sönme yok. RGB işleme hafifletildi, bu da tuş tepkisini hızlandırıyor.
 - Varsayılan keymap'te **fare tuşları** açık.
+- **Fn + G** sürekli yanan pil göstergelerini (şarj ışığı, düşük pil uyarısı) açar ya da kapatır. Ayar kaydedilir. Yeşil yanıp sönme açık, kırmızı kapalı demek. Fn + Space ile gösterilen pil seviyesi ve %0'da otomatik uyku bundan etkilenmez.
+- **Fabrika ayarına dönüş NKRO'yu korur:** Fn + ` (3 sn basılı) sonrasında klavye, kablo çıkarılıp takılana kadar 6 tuşla sınırlı kalmıyor.
 
 Bu depo **yalnızca klavye klasörünü** içerir ve tek başına derlenmez. Kablosuz sürücü (`keyboards/linker/wireless`) yalnızca MonsGeek'in QMK fork'unda bulunduğu için o fork gerekir.
 
