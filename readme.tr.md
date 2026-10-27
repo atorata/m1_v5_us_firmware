@@ -111,7 +111,8 @@ Kendi keymap'in için `keymaps/default` klasörünü `keymaps/<ad>` olarak kopya
 | `undefined reference to 'im_test_rate_flag'` | `m1_v5_us.c` eski. Bu deponun son sürümünü çek; yeni MonsGeek dalları bu değişkeni istiyor. |
 | `lib/chibios/... No such file` / `ChibiOS not found` | Submodule'ler eksik. Yukarıdaki `git submodule update ...` satırını çalıştır. |
 | `arm-none-eabi-gcc: not found` | Derleyici yok. Docker ile derle ya da `qmk doctor` çalıştır. |
-| Docker: çıktı dosyalarında `permission denied` | `docker run` satırından `--user ...` kısmını kaldır ya da QMK klasörünün sahipliğini `chown` ile kendine geri al. |
+| `Could not find module appdirs!` / `Please run ... pip install -r /qmk_firmware/requirements.txt` | En güncel QMK imajı MonsGeek fork'undan daha yeni; fork hâlâ eski Python paketlerini istiyor. `build.sh`'ın son sürümünü çek: derlemeden önce fork'un bağımlılıklarını kendisi kuruyor. `--native` kullanıyorsan bir kez `python3 -m pip install -r ~/qmk-monsgeek/requirements.txt` çalıştır. |
+| Docker: `~/qmk-monsgeek` içindeki dosyalarda `permission denied` | Eski bir derlemeden kalmış. `sudo chown -R "$(id -u):$(id -g)" ~/qmk-monsgeek` çalıştır. |
 | Klavye yükleme için görünmüyor | Bootloader'da değil ya da BT/2.4G modunda. Kabloyu tak ve bootloader'a tekrar gir. |
 
 ---

@@ -111,7 +111,8 @@ The MCU is a **WB32** and the bootloader is `wb32-dfu`. Flash over a **USB cable
 | `undefined reference to 'im_test_rate_flag'` | Old copy of `m1_v5_us.c`. Pull the latest version of this repo; newer MonsGeek branches need this variable. |
 | `lib/chibios/... No such file` / `ChibiOS not found` | Submodules missing. Run the `git submodule update ...` line above. |
 | `arm-none-eabi-gcc: not found` | No toolchain. Use the Docker way, or run `qmk doctor`. |
-| Docker: `permission denied` on output files | Remove `--user ...` from the `docker run` line, or `chown` the QMK tree back to yourself. |
+| `Could not find module appdirs!` / `Please run ... pip install -r /qmk_firmware/requirements.txt` | The latest QMK image is newer than the MonsGeek fork, which still needs older Python packages. Pull the latest `build.sh`, which installs the fork's requirements before compiling. With `--native`, run `python3 -m pip install -r ~/qmk-monsgeek/requirements.txt` once. |
+| Docker: `permission denied` on files in `~/qmk-monsgeek` | Left over from an older build run. Run `sudo chown -R "$(id -u):$(id -g)" ~/qmk-monsgeek`. |
 | Keyboard not detected for flashing | It is not in the bootloader, or it is in BT/2.4G mode. Use the cable and enter the bootloader again. |
 
 ---

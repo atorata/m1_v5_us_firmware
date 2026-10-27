@@ -45,10 +45,31 @@ tar -C "$FW" --exclude=.git --exclude=build.sh -cf - . | tar -C "$QMK/keyboards/
 # 4. Compile
 echo ">> compiling ($MODE, keymap: $KEYMAP)"
 if [ "$MODE" = docker ]; then
-    docker run --rm --user "$(id -u):$(id -g)" \
+    # The latest qmk_cli image targets current QMK, but the MonsGeek fork still
+    # needs older Python packages (e.g. appdirs). Install the fork's own
+    # requirements into the qmk CLI's Python first, then compile. This runs as
+    # root inside the container, so hand the output back to the calling user.
+    docker run --rm \
+        -e HOST_UID="$(id -u)" -e HOST_GID="$(id -g)" \
+        -e KB="$KB" -e KEYMAP="$KEYMAP" \
         -v "$QMK":/qmk_firmware -w /qmk_firmware \
         ghcr.io/qmk/qmk_cli \
-        qmk compile -kb "$KB" -km "$KEYMAP"
+        sh -ec '
+            # Python that runs the qmk CLI (works for "#!/abs/python" and "#!/usr/bin/env python3")
+            set -- $(head -n1 "$(command -v qmk)" | sed "s/^#!//")
+            PY="$("$@" -c "import sys; print(sys.executable)")"
+            echo ">> installing the fork'"'"'s python requirements into $PY"
+            if command -v uv >/dev/null 2>&1; then
+                uv pip install -q --python "$PY" -r requirements.txt
+            else
+                "$PY" -m pip --version >/dev/null 2>&1 || "$PY" -m ensurepip -q
+                "$PY" -m pip install -q -r requirements.txt
+            fi
+            rc=0
+            qmk compile -kb "$KB" -km "$KEYMAP" || rc=$?
+            chown -R "$HOST_UID:$HOST_GID" .build ./*.bin 2>/dev/null || true
+            exit $rc
+        '
 else
     (cd "$QMK" && qmk compile -kb "$KB" -km "$KEYMAP")
 fi
