@@ -523,30 +523,19 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
 
             return false;
         } break;
-        case RGB_SPI: {
-            if (record->event.pressed) {
-                if (rgb_matrix_get_speed() >= (RGB_MATRIX_SPD_STEP * 5)) {
-                    // rgb_blink_dir(); // Removed for seamless transitions
-                }
-            }
-        } break;
         case RGB_SPD: {
             if (record->event.pressed) {
                 if (rgb_matrix_get_speed() <= RGB_MATRIX_SPD_STEP * 2) {
-                    if (rgb_matrix_get_speed() != RGB_MATRIX_SPD_STEP)
-                        // rgb_blink_dir(); // Removed for seamless transitions
                     rgb_matrix_set_speed(RGB_MATRIX_SPD_STEP);
 
                     return false;
                 }
-                // rgb_blink_dir(); // Removed for seamless transitions
             }
         } break;
         case RGB_VAI: {
             if (record->event.pressed) {
                 rgb_matrix_enable();
                 gpio_write_pin_high(LED_POWER_EN_PIN);
-                // if (rgb_matrix_get_val() != RGB_MATRIX_MAXIMUM_BRIGHTNESS) rgb_blink_dir(); // Removed for seamless transitions
             }
         } break;
         case RGB_VAD: {
@@ -557,28 +546,17 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
                         rgb_matrix_set_color(i, 0, 0, 0);
                     }
                 }
-                // if (rgb_matrix_get_val() != 0) rgb_blink_dir(); // Removed for seamless transitions
             }
         } break;
         case RGB_SAI: {
             if (record->event.pressed) {
-                uint8_t index;
-                index = record_color_hsv(true);
-                if ((index != 0xFF)) {
-                    // rgb_blink_dir(); // Removed for seamless transitions
-                }
-
+                record_color_hsv(true);
             }
             return false;
         } break;
         case RGB_SAD: {
             if (record->event.pressed) {
-                uint8_t index;
-                index = record_color_hsv(false);
-                if (index != 0xFF) {
-                    // rgb_blink_dir(); // Removed for seamless transitions
-                }
-
+                record_color_hsv(false);
             }
             return false;
         } break;
@@ -662,7 +640,6 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
         } break;
         case RGB_MOD: {
             if (record->event.pressed) {
-                // rgb_blink_dir(); // Removed for seamless mode transition
                 if (rgb_matrix_get_mode() == RGB_MATRIX_CUSTOM_RGBR_PLAY) {
                     if (rgbrec_is_started()) {
                         rgbrec_read_current_channel(confinfo.record_channel);
@@ -1156,9 +1133,6 @@ void nkr_indicators_hook(uint8_t index) {
     }
 }
 
-// RGB indicator optimization: track active indicators to skip unnecessary processing
-static uint8_t active_indicator_count = 0;
-
 void rgb_matrix_hs_indicator_set(uint8_t index, RGB rgb, uint32_t interval, uint8_t times) {
 
     for (int i = 0; i < HS_RGB_INDICATOR_COUNT; i++) {
@@ -1174,7 +1148,6 @@ void rgb_matrix_hs_indicator_set(uint8_t index, RGB rgb, uint32_t interval, uint
             else {
                 hs_rgb_indicators[i].blink_cb = nkr_indicators_hook;
             }
-            active_indicator_count++;
             break;
         }
     }
@@ -1183,19 +1156,15 @@ void rgb_matrix_hs_indicator_set(uint8_t index, RGB rgb, uint32_t interval, uint
 void rgb_matrix_hs_set_remain_time(uint8_t index, uint8_t remain_time) {
 
     for (int i = 0; i < HS_RGB_INDICATOR_COUNT; i++) {
-        if (hs_rgb_indicators[i].index == index) {
+        if (hs_rgb_indicators[i].active && hs_rgb_indicators[i].index == index) {
             hs_rgb_indicators[i].times  = 0;
             hs_rgb_indicators[i].active = false;
-            if (active_indicator_count > 0) active_indicator_count--;
             break;
         }
     }
 }
 
 void rgb_matrix_hs_indicator(void) {
-    // Skip processing if no active indicators
-    if (active_indicator_count == 0) return;
-
     for (int i = 0; i < HS_RGB_INDICATOR_COUNT; i++) {
         if (hs_rgb_indicators[i].active) {
             if (timer_elapsed32(hs_rgb_indicators[i].timer) >= hs_rgb_indicators[i].interval) {
@@ -1208,7 +1177,6 @@ void rgb_matrix_hs_indicator(void) {
                 if (hs_rgb_indicators[i].times <= 0) {
                     hs_rgb_indicators[i].active = false;
                     hs_rgb_indicators[i].timer  = 0x00;
-                    if (active_indicator_count > 0) active_indicator_count--;
                     if (hs_rgb_indicators[i].blink_cb != NULL)
                         hs_rgb_indicators[i].blink_cb(i);
                     continue;
@@ -1305,7 +1273,9 @@ void hs_reset_settings(void) {
     keymap_config.raw = eeconfig_read_keymap();
 
 #if defined(NKRO_ENABLE) && defined(FORCE_NKRO)
-    keymap_config.nkro = 0;
+    // eeconfig_init() cleared NKRO; turn it back on like boot does, otherwise
+    // the board stays in 6KRO until it is power-cycled.
+    keymap_config.nkro = 1;
     eeconfig_update_keymap(keymap_config.raw);
 #endif
 
