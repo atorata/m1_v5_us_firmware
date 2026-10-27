@@ -26,7 +26,7 @@ jobs:
         run: |
           ref="${GITHUB_REF_NAME//\//-}"
           [ "$GITHUB_REF_TYPE" = tag ] || ref="${GITHUB_SHA::7}"
-          name="m1_v5_us_${ref}.bin"
+          name="m1_v5_via_us_ansi_${ref}.bin"
           cp "$HOME/qmk-monsgeek/monsgeek_m1_v5_m1_v5_us_default.bin" "$name"
           sha256sum "$name" > "$name.sha256"
           echo "name=$name" >> "$GITHUB_OUTPUT"
@@ -54,7 +54,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create "$GITHUB_REF_NAME" m1_v5_us_*.bin m1_v5_us_*.bin.sha256 \
+          gh release create "$GITHUB_REF_NAME" m1_v5_via_us_ansi_*.bin m1_v5_via_us_ansi_*.bin.sha256 \
             --repo "$GITHUB_REPOSITORY" \
-            --title "M1 V5 US firmware $GITHUB_REF_NAME" \
+            --title "M1 V5 VIA (US / ANSI) firmware $GITHUB_REF_NAME" \
             --generate-notes

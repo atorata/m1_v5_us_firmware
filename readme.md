@@ -1,8 +1,19 @@
-# MonsGeek / AKKO M1 V5 (US) — custom QMK firmware
+# MonsGeek / AKKO M1 V5 **VIA** (US / ANSI) — custom QMK firmware
 
 **English** | [Türkçe](readme.tr.md)
 
-Modified firmware for the M1 V5 US (VIA, wired + Bluetooth + 2.4G).
+Modified firmware for the **M1 V5 VIA version, US (ANSI) layout** (wired + Bluetooth + 2.4G).
+
+> ⚠ **Check your keyboard first.** This firmware is only for the M1 V5 **VIA** version with the **US / ANSI** layout:
+> - USB IDs **VID `0x342D`, PID `0xE4C5`**
+> - VIA design file: [`M1_V5_VIA_V3_ANSI.json`](https://files.monsgeek.com/M1_V5_VIA_V3_ANSI.json)
+>
+> Other M1 V5 variants use different firmware: the UK / ISO layout (`m1_v5_uk`, PID `0xE4C2`), editions without VIA, and other revisions. Do not flash this onto them; the keyboard will not work correctly until you flash its original firmware back.
+>
+> To find your keyboard's IDs, connect it with the cable:
+> - **Windows:** Device Manager → your keyboard → Properties → Details → *Hardware Ids*. It should contain `VID_342D&PID_E4C5`.
+> - **Linux:** `lsusb | grep -i 342d` should show `342d:e4c5`.
+> - **macOS:** System Information → USB.
 
 Changes compared to the stock MonsGeek firmware:
 
@@ -19,8 +30,8 @@ This repository holds **only the keyboard folder**. It does not build on its own
 
 Ready-to-flash firmware is on the [**Releases**](https://github.com/atorata/m1_v5_us_firmware/releases) page.
 
-1. Open the latest release and download `m1_v5_us_<version>.bin`.
-2. Optionally, check it against the `.sha256` file next to it: `sha256sum -c m1_v5_us_<version>.bin.sha256`.
+1. Open the latest release and download `m1_v5_via_us_ansi_<version>.bin`.
+2. Optionally, check it against the `.sha256` file next to it: `sha256sum -c m1_v5_via_us_ansi_<version>.bin.sha256`.
 3. Flash it as described in [Flashing](#flashing).
 
 Every release is built automatically by GitHub Actions from this repo, using the same `build.sh` described below. Builds for unreleased commits are attached as a `firmware` artifact to each run on the [Actions](https://github.com/atorata/m1_v5_us_firmware/actions) page; you need to be signed in to GitHub to download those.
@@ -112,6 +123,7 @@ The MCU is a **WB32** and the bootloader is `wb32-dfu`. Flash over a **USB cable
    - [QMK Toolbox](https://github.com/qmk/qmk_toolbox/releases): open the `.bin` and click *Flash*.
    - Command line, from the QMK tree: `qmk flash -kb monsgeek/m1_v5/m1_v5_us -km default`. This needs `wb32-dfu-updater_cli`; `qmk doctor` / `qmk setup` install it.
 3. Unplug and replug. Because entering the bootloader resets settings, reapply your VIA keymap and RGB settings.
+4. **VIA:** if [VIA](https://usevia.app) does not detect the keyboard on its own, load MonsGeek's design file [`M1_V5_VIA_V3_ANSI.json`](https://files.monsgeek.com/M1_V5_VIA_V3_ANSI.json): *Settings → Show Design tab*, then *Design → Load*.
 
 ---
 
