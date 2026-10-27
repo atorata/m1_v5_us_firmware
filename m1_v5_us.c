@@ -47,7 +47,6 @@ enum layers {
 hs_rgb_indicator_t hs_rgb_indicators[HS_RGB_INDICATOR_COUNT];
 hs_rgb_indicator_t hs_rgb_bat[HS_RGB_BAT_COUNT];
 
-void rgb_blink_dir(void);
 void hs_reset_settings(void);
 void rgb_matrix_hs_indicator(void);
 void rgb_matrix_hs_indicator_set(uint8_t index, RGB rgb, uint32_t interval, uint8_t times);
@@ -57,16 +56,11 @@ void rgb_matrix_hs_set_remain_time(uint8_t index, uint8_t remain_time);
 #define keymap_is_base_layer() ((get_highest_layer(default_layer_state) == _BL) || (get_highest_layer(default_layer_state) == _FL))
 
 uint32_t post_init_timer     = 0x00;
-bool inqbat_flag             = false;
-bool mac_status              = false;
 bool charging_state          = false;
 bool bat_full_flag           = false;
 bool enable_bat_indicators   = true;
 uint32_t bat_indicator_cnt   = true;
 static uint32_t ee_clr_timer = 0;
-static uint32_t rec_time;
-bool test_white_light_flag = false;
-HSV start_hsv;
 bool no_record_fg, im_test_rate_flag;
 bool lower_sleep = false;
 uint8_t buff[]   = {14, 8, 2, 1, 1, 1, 1, 1, 1, 1, 0};
@@ -161,8 +155,6 @@ void keyboard_post_init_kb(void) {
     keyboard_post_init_user();
 
     rgbrec_init(confinfo.record_channel);
-
-    start_hsv = rgb_matrix_get_hsv();
 }
 
 #ifdef WIRELESS_ENABLE
@@ -344,12 +336,8 @@ bool process_record_wls(uint16_t keycode, keyrecord_t *record) {
 }
 #endif
 
-bool process_record_user(uint16_t keycode, keyrecord_t *record) {
-
-    if (test_white_light_flag && record->event.pressed) {
-        test_white_light_flag = false;
-        rgb_matrix_set_color_all(0x00, 0x00, 0x00);
-    }
+// While an RGB recording is running, keys paint LEDs instead of typing.
+static bool process_record_rgbrec(uint16_t keycode, keyrecord_t *record) {
 
     if (*md_getp_state() == MD_STATE_CONNECTED) {
         hs_rgb_blink_set_timer(timer_read32());
@@ -473,6 +461,10 @@ RGB rgb_test_open;
 bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
 
     if (process_record_user(keycode, record) != true) {
+        return false;
+    }
+
+    if (process_record_rgbrec(keycode, record) != true) {
         return false;
     }
 
@@ -631,10 +623,8 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
                 if (!rgbrec_is_started()) {
                     rgbrec_start(confinfo.record_channel);
                     no_record_fg = false;
-                    rec_time     = timer_read32();
                     rgbrec_set_close_all(HSV_BLACK);
                 } else {
-                    rec_time = 0;
                     rgbrec_end(confinfo.record_channel);
                 }
                 dprintf("confinfo.record_last_mode = %d\r\n", confinfo.record_last_mode);
@@ -656,12 +646,10 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
                         rgb_matrix_mode(RGB_MATRIX_DEFAULT_MODE);
                     eeconfig_confinfo_update(confinfo.raw);
                     dprintf("confinfo.record_last_mode = %d\r\n", confinfo.record_last_mode);
-                    start_hsv = rgb_matrix_get_hsv();
                     return false;
                 }
                 record_rgbmatrix_increase(&(confinfo.record_last_mode));
                 eeconfig_confinfo_update(confinfo.raw);
-                start_hsv = rgb_matrix_get_hsv();
             }
 
             return false;
@@ -854,7 +842,6 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
             if (record->event.pressed) {
                 register_code(KC_LCMD);
                 register_code(KC_SPC);
-                wait_ms(20);
             } else {
                 unregister_code(KC_SPC);
                 unregister_code(KC_LCMD);
@@ -879,7 +866,9 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
     return true;
 }
 
-void housekeeping_task_user(void) { // loop
+// Runs every main-loop pass. This is a _user hook only because the wireless
+// driver (keyboards/linker/wireless/wireless.c) already owns housekeeping_task_kb.
+void housekeeping_task_user(void) {
     uint8_t hs_now_mode;
     static uint32_t hs_current_time;
 
@@ -1127,11 +1116,7 @@ void bat_indicators(void) {
 
 #endif
 
-void rgb_blink_dir(void) {
-    rgb_matrix_hs_indicator_set(0xFF, (RGB){0, 0, 0}, 250, 1);
-}
-
-bool hs_reset_settings_user(void) {
+static bool hs_reset_settings_user(void) {
 
     rgb_matrix_hs_indicator_set(0xFF, (RGB){0x10, 0x10, 0x10}, 250, 3);
 
@@ -1219,18 +1204,10 @@ void rgb_matrix_hs_indicator(void) {
 
 bool rgb_matrix_indicators_advanced_kb(uint8_t led_min, uint8_t led_max) {
 
-    if (test_white_light_flag) {
-        RGB rgb_test_open = hsv_to_rgb((HSV){.h = 0, .s = 0, .v = RGB_MATRIX_VAL_STEP * 5});
-        rgb_matrix_set_color_all(rgb_test_open.r, rgb_test_open.g, rgb_test_open.b);
-
-        return false;
-    }
-#ifdef RGBLIGHT_ENABLE
     if (rgb_matrix_indicators_advanced_user(led_min, led_max) != true) {
 
         return false;
     }
-#endif
 
     if (ee_clr_timer && timer_elapsed32(ee_clr_timer) > 3000) {
         hs_reset_settings();
@@ -1243,17 +1220,10 @@ bool rgb_matrix_indicators_advanced_kb(uint8_t led_min, uint8_t led_max) {
     if (!keymap_is_mac_system() && keymap_config.no_gui)
         rgb_matrix_set_color(HS_RGB_INDEX_WIN_LOCK, 0x20, 0x20, 0x20);
 
-#ifdef RGBLIGHT_ENABLE
-    if (rgb_matrix_indicators_advanced_rgblight(led_min, led_max) != true) {
-
-        return false;
-    }
-#endif
-
 #ifdef WIRELESS_ENABLE
     rgb_matrix_wls_indicator();
 
-    if (enable_bat_indicators && !inqbat_flag && !rgbrec_is_started()) {
+    if (enable_bat_indicators && !rgbrec_is_started()) {
         if (!confinfo.bat_ind_off) rgb_matrix_hs_bat();
         bat_indicators(); // always runs: also handles auto-sleep at 0 %
         bat_indicator_cnt = timer_read32();
