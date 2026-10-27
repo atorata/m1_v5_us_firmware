@@ -1,3 +1,9 @@
+// Taken unmodified from MonsGeek/qmk_firmware, branch `wireless`
+// (commit 1cdb8864a8d5155c529102fb2b1f3acd35ec844a), keyboards/monsgeek/m1_v5/m1_v5_us/wls/wls.h.
+// The upstream file has no copyright header; it is distributed under the same
+// GPL-2.0-or-later terms as the rest of that QMK tree.
+// SPDX-License-Identifier: GPL-2.0-or-later
+
 #include QMK_KEYBOARD_H
 
 #include "quantum.h"

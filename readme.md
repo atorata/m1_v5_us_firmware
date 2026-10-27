@@ -233,3 +233,8 @@ support. It shares VIA's USB channel, so VIA keeps working and there is nothing 
 
 - Original keyboard support: [yangzheng20003](https://github.com/yangzheng20003) / MonsGeek.
 - QMK: [qmk.fm](https://qmk.fm). Licensed GPL-2.0-or-later, like the original files.
+- Wireless driver glue (`wls/`): taken unmodified from [`MonsGeek/qmk_firmware`](https://github.com/MonsGeek/qmk_firmware), branch `wireless`.
+
+## License
+
+GPL-2.0-or-later. See [`LICENSE`](LICENSE) for the full text. Each source file keeps its original copyright notice. The source for every released `.bin` is the tagged commit in this repository, built against `MonsGeek/qmk_firmware` (branch `wireless`).
