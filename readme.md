@@ -20,7 +20,7 @@ This repository holds **only the keyboard folder**. It does not build on its own
 | | Docker way (recommended) | Native way |
 |---|---|---|
 | OS | Linux, macOS, or Windows with WSL2 | Linux, macOS, or Windows with MSYS2/WSL2 |
-| Tools | `git`, `rsync`, Docker | `git`, `rsync`, [QMK CLI](https://docs.qmk.fm/newbs_getting_started) (installs the `arm-none-eabi` toolchain) |
+| Tools | `git`, `tar`, Docker | `git`, `tar`, [QMK CLI](https://docs.qmk.fm/newbs_getting_started) (installs the `arm-none-eabi` toolchain) |
 | Disk | ~1 GB (QMK image) + ~200 MB (source) | ~200 MB (source) + toolchain |
 | Network | Needed for the first build only | Needed for the first build only |
 
@@ -31,43 +31,34 @@ The build has two sources:
 
 Only 3 of the QMK submodules are needed: `lib/chibios`, `lib/chibios-contrib` and `lib/printf`. Fetching only these takes about 20 seconds. A full `qmk setup` downloads all of them (~1 GB).
 
-### One-shot build (Docker)
+### One-shot build (`build.sh`)
 
-Save this as `build.sh` next to your clone of this repo and run `./build.sh path/to/m1_v5_us_firmware`:
+The repo ships a [`build.sh`](build.sh) script that does everything in one go:
 
 ```bash
-#!/usr/bin/env bash
-set -euo pipefail
-
-FW="$(cd "${1:-.}" && pwd)"                 # this repo
-QMK="${QMK_DIR:-$HOME/qmk-monsgeek}"        # MonsGeek QMK tree (created on first run)
-KB=monsgeek/m1_v5/m1_v5_us
-
-# 1. MonsGeek QMK fork, wireless branch, shallow (first run only)
-[ -d "$QMK/.git" ] || git clone --depth 1 --branch wireless --single-branch \
-    https://github.com/MonsGeek/qmk_firmware.git "$QMK"
-
-# 2. Only the submodules this keyboard needs
-git -C "$QMK" submodule update --init --depth 1 lib/chibios lib/chibios-contrib lib/printf
-
-# 3. Reset the stock keyboard folder, then copy this repo over it
-git -C "$QMK" checkout -q -- "keyboards/$KB"
-rsync -a --exclude=.git "$FW/" "$QMK/keyboards/$KB/"
-
-# 4. Compile inside the official QMK image (no local toolchain needed)
-docker run --rm --user "$(id -u):$(id -g)" \
-    -v "$QMK":/qmk_firmware -w /qmk_firmware \
-    ghcr.io/qmk/qmk_cli \
-    qmk compile -kb "$KB" -km default
-
-ls -l "$QMK"/monsgeek_m1_v5_m1_v5_us_default.bin
+git clone https://github.com/atorata/m1_v5_us_firmware.git
+cd m1_v5_us_firmware
+./build.sh            # Docker (recommended): no local toolchain needed
+./build.sh --native   # use your locally installed QMK CLI instead
 ```
+
+The script runs four steps:
+1. Clones MonsGeek's QMK fork, `wireless` branch, shallow, into `~/qmk-monsgeek`. This happens on the first run only.
+2. Fetches the 3 submodules listed above.
+3. Resets the stock keyboard folder, then copies this repo over it.
+4. Compiles, either inside the official `ghcr.io/qmk/qmk_cli` image or with your local `qmk`.
 
 The first run takes a minute or two (clone, submodules and image pull). After that, a rebuild only copies the files and compiles.
 
 The output is `~/qmk-monsgeek/monsgeek_m1_v5_m1_v5_us_default.bin`.
 
-### Native build (no Docker)
+Two environment variables change the defaults:
+- `QMK_DIR`: where the QMK tree lives.
+- `KEYMAP`: which keymap to build.
+
+Example: `KEYMAP=mine QMK_DIR=~/src/qmk ./build.sh`.
+
+### Manual steps (no script)
 
 ```bash
 python3 -m pip install --user qmk           # or follow the QMK getting-started guide for your OS
@@ -75,7 +66,7 @@ git clone --depth 1 --branch wireless --single-branch \
     https://github.com/MonsGeek/qmk_firmware.git ~/qmk-monsgeek
 cd ~/qmk-monsgeek
 git submodule update --init --depth 1 lib/chibios lib/chibios-contrib lib/printf
-rsync -a --exclude=.git /path/to/m1_v5_us_firmware/ keyboards/monsgeek/m1_v5/m1_v5_us/
+tar -C /path/to/m1_v5_us_firmware --exclude=.git --exclude=build.sh -cf - . | tar -C keyboards/monsgeek/m1_v5/m1_v5_us -xf -
 qmk compile -kb monsgeek/m1_v5/m1_v5_us -km default
 ```
 
