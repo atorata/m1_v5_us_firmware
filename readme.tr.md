@@ -1,8 +1,19 @@
-# MonsGeek / AKKO M1 V5 (US) — özel QMK firmware'i
+# MonsGeek / AKKO M1 V5 **VIA** (US / ANSI) — özel QMK firmware'i
 
 [English](readme.md) | **Türkçe**
 
-M1 V5 US için değiştirilmiş firmware (VIA destekli; kablolu, Bluetooth ve 2.4G).
+**M1 V5'in VIA versiyonu, US (ANSI) düzeni** için değiştirilmiş firmware (kablolu, Bluetooth ve 2.4G).
+
+> ⚠ **Önce klavyeni kontrol et.** Bu firmware yalnızca **US / ANSI** düzenli M1 V5 **VIA** versiyonu içindir:
+> - USB kimlikleri **VID `0x342D`, PID `0xE4C5`**
+> - VIA tasarım dosyası: [`M1_V5_VIA_V3_ANSI.json`](https://files.monsgeek.com/M1_V5_VIA_V3_ANSI.json)
+>
+> M1 V5'in diğer versiyonları farklı firmware kullanır: UK / ISO düzeni (`m1_v5_uk`, PID `0xE4C2`), VIA'sız sürümler ve diğer revizyonlar. Bu firmware'i onlara yükleme; orijinal firmware'ini geri yükleyene kadar klavye düzgün çalışmaz.
+>
+> Klavyenin kimliklerini görmek için kabloyla bağla:
+> - **Windows:** Aygıt Yöneticisi → klavye → Özellikler → Ayrıntılar → *Donanım Kimlikleri*. İçinde `VID_342D&PID_E4C5` olmalı.
+> - **Linux:** `lsusb | grep -i 342d` komutu `342d:e4c5` göstermeli.
+> - **macOS:** Sistem Bilgisi → USB.
 
 Standart MonsGeek firmware'ine göre farklar:
 
@@ -19,8 +30,8 @@ Bu depo **yalnızca klavye klasörünü** içerir ve tek başına derlenmez. Kab
 
 Yüklemeye hazır firmware [**Releases**](https://github.com/atorata/m1_v5_us_firmware/releases) sayfasında.
 
-1. En son sürümü aç ve `m1_v5_us_<sürüm>.bin` dosyasını indir.
-2. İstersen dosyayı yanındaki `.sha256` ile doğrula: `sha256sum -c m1_v5_us_<sürüm>.bin.sha256`.
+1. En son sürümü aç ve `m1_v5_via_us_ansi_<sürüm>.bin` dosyasını indir.
+2. İstersen dosyayı yanındaki `.sha256` ile doğrula: `sha256sum -c m1_v5_via_us_ansi_<sürüm>.bin.sha256`.
 3. [Yükleme (flash)](#yükleme-flash) bölümündeki gibi klavyeye yükle.
 
 Her sürümü GitHub Actions bu depodan, aşağıda anlatılan `build.sh` ile otomatik derler. Henüz sürüm olmamış commit'lerin derlemeleri, [Actions](https://github.com/atorata/m1_v5_us_firmware/actions) sayfasındaki her çalışmaya `firmware` adıyla eklenir; bunları indirmek için GitHub'a giriş yapmış olman gerekir.
@@ -112,6 +123,7 @@ Kendi keymap'in için `keymaps/default` klasörünü `keymaps/<ad>` olarak kopya
    - [QMK Toolbox](https://github.com/qmk/qmk_toolbox/releases): `.bin` dosyasını aç, *Flash*'a bas.
    - Komut satırı, QMK ağacının içinden: `qmk flash -kb monsgeek/m1_v5/m1_v5_us -km default`. Bunun için `wb32-dfu-updater_cli` gerekir; `qmk doctor` ya da `qmk setup` kurar.
 3. Kabloyu çıkarıp tak. Bootloader'a girmek ayarları sıfırladığı için VIA keymap'ini ve RGB ayarlarını yeniden yap.
+4. **VIA:** [VIA](https://usevia.app) klavyeyi kendiliğinden tanımazsa MonsGeek'in tasarım dosyasını yükle: [`M1_V5_VIA_V3_ANSI.json`](https://files.monsgeek.com/M1_V5_VIA_V3_ANSI.json). Bunun için önce *Settings → Show Design tab*, sonra *Design → Load*.
 
 ---
 
