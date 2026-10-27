@@ -65,6 +65,10 @@ if [ "$MODE" = docker ]; then
                 "$PY" -m pip --version >/dev/null 2>&1 || "$PY" -m ensurepip -q
                 "$PY" -m pip install -q -r requirements.txt
             fi
+            # The tree is owned by the host user but we run as root here; without
+            # this git refuses ("dubious ownership"), QMK cannot read its version
+            # and make stops with "multiple target patterns".
+            git config --global --add safe.directory "*"
             rc=0
             qmk compile -kb "$KB" -km "$KEYMAP" || rc=$?
             chown -R "$HOST_UID:$HOST_GID" .build ./*.bin 2>/dev/null || true
