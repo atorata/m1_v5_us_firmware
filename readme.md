@@ -23,6 +23,7 @@ Changes compared to the stock MonsGeek firmware:
 - **Mouse keys** enabled in the default keymap.
 - **Fn + G** turns the always-on battery LEDs (charging light, low-battery blink) on or off. The setting is saved. A green flash means on, a red flash means off. The battery level shown with Fn + Space and the automatic sleep at 0 % are not affected.
 - **Factory reset keeps NKRO:** after Fn + ` (held 3 s), the board no longer drops to 6-key rollover until it is replugged.
+- **OpenRGB support** (cable only, alongside VIA). See [OpenRGB](#openrgb).
 
 This repository holds **only the keyboard folder**. It does not build on its own: it needs MonsGeek's QMK fork, because the wireless driver (`keyboards/linker/wireless`) is only there.
 
@@ -189,6 +190,30 @@ If `lsusb` shows `342d:e4c5` instead of `342d:dfa0`, the keyboard is still runni
 **WSL2:** WSL cannot see USB devices by default. Flash from Windows with QMK Toolbox, or attach the keyboard to WSL with [usbipd-win](https://github.com/dorssel/usbipd-win) after it is in the bootloader.
 
 ---
+
+## OpenRGB
+
+The firmware speaks the VialRGB protocol, which [OpenRGB](https://openrgb.org) 1.0 and newer
+support. It shares VIA's USB channel, so VIA keeps working and there is nothing to switch.
+
+1. Connect the keyboard **with the cable** (wireless modes do not carry this channel).
+2. In OpenRGB: **Settings → Manual Devices → Add → QMK VialRGB Device**.
+   Name: `M1 V5`, USB VID: `342D`, USB PID: `E4C5`. Save, then rescan devices (or restart OpenRGB).
+3. The keyboard shows up with all its effects, plus **Direct** for per-key colours.
+
+- Changes made from OpenRGB are **not saved** on the keyboard. Unplugging it, or picking an
+  effect on the keyboard (Fn + Delete), brings back its own lighting.
+- Effects OpenRGB does not know (pixel flow, the RGB recording) appear as *Off* in OpenRGB.
+- Don't keep VIA and OpenRGB open at the same time: both read the same channel and can take
+  each other's replies.
+- Linux needs access to the keyboard's hidraw device (VIA in the browser needs the same).
+  If OpenRGB does not find the keyboard, add this rule and replug it:
+
+   ```sh
+   echo 'KERNEL=="hidraw*", ATTRS{idVendor}=="342d", ATTRS{idProduct}=="e4c5", TAG+="uaccess"' \
+       | sudo tee /etc/udev/rules.d/60-m1v5-hidraw.rules
+   sudo udevadm control --reload-rules && sudo udevadm trigger
+   ```
 
 ## Troubleshooting
 

@@ -23,6 +23,7 @@ Standart MonsGeek firmware'ine göre farklar:
 - Varsayılan keymap'te **fare tuşları** açık.
 - **Fn + G** sürekli yanan pil göstergelerini (şarj ışığı, düşük pil uyarısı) açar ya da kapatır. Ayar kaydedilir. Yeşil yanıp sönme açık, kırmızı kapalı demek. Fn + Space ile gösterilen pil seviyesi ve %0'da otomatik uyku bundan etkilenmez.
 - **Fabrika ayarına dönüş NKRO'yu korur:** Fn + ` (3 sn basılı) sonrasında klavye, kablo çıkarılıp takılana kadar 6 tuşla sınırlı kalmıyor.
+- **OpenRGB desteği** (yalnız kabloyla, VIA ile birlikte). Bkz. [OpenRGB](#openrgb).
 
 Bu depo **yalnızca klavye klasörünü** içerir ve tek başına derlenmez. Kablosuz sürücü (`keyboards/linker/wireless`) yalnızca MonsGeek'in QMK fork'unda bulunduğu için o fork gerekir.
 
@@ -189,6 +190,29 @@ wb32-dfu-updater_cli -R                                     # klavyeyi yeniden b
 **WSL2:** WSL varsayılan olarak USB cihazlarını görmez. Windows'tan QMK Toolbox ile yükle ya da klavye bootloader'dayken [usbipd-win](https://github.com/dorssel/usbipd-win) ile WSL'e bağla.
 
 ---
+
+## OpenRGB
+
+Firmware, [OpenRGB](https://openrgb.org) 1.0 ve sonrasının desteklediği VialRGB protokolünü
+konuşuyor. VIA ile aynı USB kanalını kullanıyor; VIA çalışmaya devam ediyor, geçiş yapmak gerekmiyor.
+
+1. Klavyeyi **kabloyla** bağla (kablosuz modlar bu kanalı taşımıyor).
+2. OpenRGB'de: **Settings → Manual Devices → Add → QMK VialRGB Device**.
+   Name: `M1 V5`, USB VID: `342D`, USB PID: `E4C5`. Kaydet, cihazları yeniden tara (ya da OpenRGB'yi yeniden başlat).
+3. Klavye tüm efektleriyle görünür; tuş tuş renk için **Direct** modu da var.
+
+- OpenRGB'den yapılan değişiklikler klavyeye **kaydedilmez**. Kabloyu çıkarıp takmak ya da
+  klavyeden efekt seçmek (Fn + Delete) klavyenin kendi ışığını geri getirir.
+- OpenRGB'nin tanımadığı efektler (pixel flow, RGB kaydı) OpenRGB'de *Off* görünür.
+- VIA ile OpenRGB'yi aynı anda açık tutma: ikisi aynı kanalı okur ve birbirinin cevabını alabilir.
+- Linux'ta klavyenin hidraw cihazına erişim gerekir (tarayıcıdaki VIA da aynısını ister).
+  OpenRGB klavyeyi bulamazsa bu kuralı ekleyip kabloyu çıkar-tak:
+
+   ```sh
+   echo 'KERNEL=="hidraw*", ATTRS{idVendor}=="342d", ATTRS{idProduct}=="e4c5", TAG+="uaccess"' \
+       | sudo tee /etc/udev/rules.d/60-m1v5-hidraw.rules
+   sudo udevadm control --reload-rules && sudo udevadm trigger
+   ```
 
 ## Sorun giderme
 
