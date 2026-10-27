@@ -129,6 +129,49 @@ Kendi keymap'in için `keymaps/default` klasörünü `keymaps/<ad>` olarak kopya
 3. Kabloyu çıkarıp tak. Bootloader'a girmek ayarları sıfırladığı için VIA keymap'ini ve RGB ayarlarını yeniden yap.
 4. **VIA:** [VIA](https://usevia.app) klavyeyi kendiliğinden tanımazsa MonsGeek'in tasarım dosyasını yükle: [`M1_V5_VIA_V3_ANSI.json`](https://files.monsgeek.com/M1_V5_VIA_V3_ANSI.json). Bunun için önce *Settings → Show Design tab*, sonra *Design → Load*.
 
+### Linux (komut satırı)
+
+QMK Toolbox yalnızca Windows ve macOS'ta çalışır. Linux'ta yükleme, WB32 bootloader'ının kendi aracı olan `wb32-dfu-updater_cli` ile yapılır; `qmk flash` da arka planda bu aracı kullanır.
+
+**1. `wb32-dfu-updater_cli`'ı kur (bir kez).** Derleme araçlarını ve libusb'yi kur, sonra aracı derle:
+
+```bash
+# Debian / Ubuntu / Mint
+sudo apt install git cmake build-essential libusb-1.0-0-dev
+# Fedora:  sudo dnf install git cmake gcc-c++ libusb1-devel
+# Arch:    sudo pacman -S --needed git cmake base-devel libusb
+
+git clone --depth 1 https://github.com/WestberryTech/wb32-dfu-updater.git
+cd wb32-dfu-updater
+sudo bash ./bootstrap.sh install      # derleyip /usr/local/bin'e kurar
+wb32-dfu-updater_cli --help           # kurulduğunu kontrol et
+```
+
+Hazır paketler [wb32-dfu-updater README](https://github.com/WestberryTech/wb32-dfu-updater#pre-built-packages)'sinde listeli. Fedora için bir COPR deposu var, diğer dağıtımlar Homebrew kullanabilir.
+
+**2. İsteğe bağlı: `sudo`'suz yükleme.** Normal kullanıcının bootloader'a (USB kimliği `342d:dfa0`) erişmesine izin ver:
+
+```bash
+echo 'SUBSYSTEMS=="usb", ATTRS{idVendor}=="342d", ATTRS{idProduct}=="dfa0", TAG+="uaccess"' \
+    | sudo tee /etc/udev/rules.d/50-wb32-dfu.rules
+sudo udevadm control --reload-rules && sudo udevadm trigger
+```
+
+**3. Yükle.** Kabloyu tak ve bootloader'a gir (**Fn + Sağ Shift + Esc**, yukarıya bak). Sonra:
+
+```bash
+lsusb | grep -i 342d:dfa0                                   # bootloader görünmeli
+wb32-dfu-updater_cli -l                                     # "Found DFU: [0x342D:0xDFA0] ..." yazmalı
+wb32-dfu-updater_cli -D m1_v5_via_us_ansi_<sürüm>.bin       # firmware'i yaz
+wb32-dfu-updater_cli -R                                     # klavyeyi yeniden başlat
+```
+
+2. adımı atladıysan bu komutların başına `sudo` ekle. Firmware'i kendin derlediysen dosya `~/qmk-monsgeek/monsgeek_m1_v5_m1_v5_us_default.bin`.
+
+`lsusb` `342d:dfa0` yerine `342d:e4c5` gösteriyorsa klavye normal çalışıyordur, bootloader'da değildir; bootloader'a tekrar gir.
+
+**WSL2:** WSL varsayılan olarak USB cihazlarını görmez. Windows'tan QMK Toolbox ile yükle ya da klavye bootloader'dayken [usbipd-win](https://github.com/dorssel/usbipd-win) ile WSL'e bağla.
+
 ---
 
 ## Sorun giderme

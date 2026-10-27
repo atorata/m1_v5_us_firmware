@@ -129,6 +129,49 @@ The MCU is a **WB32** and the bootloader is `wb32-dfu`. Flash over a **USB cable
 3. Unplug and replug. Because entering the bootloader resets settings, reapply your VIA keymap and RGB settings.
 4. **VIA:** if [VIA](https://usevia.app) does not detect the keyboard on its own, load MonsGeek's design file [`M1_V5_VIA_V3_ANSI.json`](https://files.monsgeek.com/M1_V5_VIA_V3_ANSI.json): *Settings → Show Design tab*, then *Design → Load*.
 
+### Linux (command line)
+
+QMK Toolbox only runs on Windows and macOS. On Linux, flash with `wb32-dfu-updater_cli`, the WB32 bootloader's own tool; QMK uses the same tool behind `qmk flash`.
+
+**1. Install `wb32-dfu-updater_cli` (once).** Install the build tools and libusb, then build the tool:
+
+```bash
+# Debian / Ubuntu / Mint
+sudo apt install git cmake build-essential libusb-1.0-0-dev
+# Fedora:  sudo dnf install git cmake gcc-c++ libusb1-devel
+# Arch:    sudo pacman -S --needed git cmake base-devel libusb
+
+git clone --depth 1 https://github.com/WestberryTech/wb32-dfu-updater.git
+cd wb32-dfu-updater
+sudo bash ./bootstrap.sh install      # builds and installs to /usr/local/bin
+wb32-dfu-updater_cli --help           # check that it is installed
+```
+
+Prebuilt packages are listed in the [wb32-dfu-updater README](https://github.com/WestberryTech/wb32-dfu-updater#pre-built-packages). Fedora has a COPR repository, and other distributions can use Homebrew.
+
+**2. Optional: flash without `sudo`.** Allow normal users to access the bootloader (USB ID `342d:dfa0`):
+
+```bash
+echo 'SUBSYSTEMS=="usb", ATTRS{idVendor}=="342d", ATTRS{idProduct}=="dfa0", TAG+="uaccess"' \
+    | sudo tee /etc/udev/rules.d/50-wb32-dfu.rules
+sudo udevadm control --reload-rules && sudo udevadm trigger
+```
+
+**3. Flash.** Connect the cable and enter the bootloader (**Fn + Right Shift + Esc**, see above). Then:
+
+```bash
+lsusb | grep -i 342d:dfa0                                   # the bootloader must be visible
+wb32-dfu-updater_cli -l                                     # should print "Found DFU: [0x342D:0xDFA0] ..."
+wb32-dfu-updater_cli -D m1_v5_via_us_ansi_<version>.bin     # write the firmware
+wb32-dfu-updater_cli -R                                     # restart the keyboard
+```
+
+If you skipped step 2, prefix these commands with `sudo`. If you built the firmware yourself, the file is `~/qmk-monsgeek/monsgeek_m1_v5_m1_v5_us_default.bin`.
+
+If `lsusb` shows `342d:e4c5` instead of `342d:dfa0`, the keyboard is still running normally and not in the bootloader; enter the bootloader again.
+
+**WSL2:** WSL cannot see USB devices by default. Flash from Windows with QMK Toolbox, or attach the keyboard to WSL with [usbipd-win](https://github.com/dorssel/usbipd-win) after it is in the bootloader.
+
 ---
 
 ## Troubleshooting
