@@ -11,8 +11,12 @@
 
 #include QMK_KEYBOARD_H
 #include <string.h>
-#include "raw_hid.h"
 #include "via.h"
+
+// The wireless driver (keyboards/linker/wireless/md_raw.h) renames
+// raw_hid_send per call site and only maps VIA's own call. Use the function
+// those calls end up in: it replies over USB or the wireless module.
+void replaced_hid_send(uint8_t *data, uint8_t length);
 
 #define VIAL_PROTOCOL_VERSION    6
 #define VIALRGB_PROTOCOL_VERSION 1
@@ -340,6 +344,6 @@ bool via_command_kb(uint8_t *data, uint8_t length) {
             return false;
     }
 
-    raw_hid_send(data, length);
+    replaced_hid_send(data, length);
     return true;
 }
