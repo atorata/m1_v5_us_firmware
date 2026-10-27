@@ -485,7 +485,9 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
         case QK_BOOT: {
             if (record->event.pressed) {
                 dprintf("into boot!!!\r\n");
-                eeconfig_disable();
+                // Keep settings across a flash. QMK re-initialises EEPROM on its own when
+                // the layout changes (EECONFIG_MAGIC_NUMBER, user datablock version), and
+                // VIA resets keymap/macros when the build date differs.
                 bootloader_jump();
             }
         } break;

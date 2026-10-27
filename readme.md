@@ -120,13 +120,15 @@ To use your own keymap, copy `keymaps/default` to `keymaps/<name>` and build wit
 The MCU is a **WB32** and the bootloader is `wb32-dfu`. Flash over a **USB cable**; wireless modes cannot flash.
 
 1. **Enter the bootloader** (any of these):
-   - **Fn + Right Shift + Esc** with the keyboard plugged in. ⚠ This also resets settings (VIA keymap, RGB).
-   - Hold **Esc** while plugging in the cable (bootmagic). ⚠ This also resets settings.
+   - **Fn + Right Shift + Esc** with the keyboard plugged in. Since v1.3 this keeps your settings (see step 3).
+   - Hold **Esc** while plugging in the cable (bootmagic). ⚠ This resets all settings.
    - Press the **reset button** on the PCB.
 2. **Flash the `.bin`** (any of these):
    - [QMK Toolbox](https://github.com/qmk/qmk_toolbox/releases): open the `.bin` and click *Flash*.
    - Command line, from the QMK tree: `qmk flash -kb monsgeek/m1_v5/m1_v5_us -km default`. This needs `wb32-dfu-updater_cli`; `qmk doctor` / `qmk setup` install it.
-3. Unplug and replug. Because entering the bootloader resets settings, reapply your VIA keymap and RGB settings.
+3. Unplug and replug.
+   - **Kept** (when entering with Fn + Right Shift + Esc, v1.3 and later): RGB mode, colour and brightness; the Fn + G, Fn + W and Fn + Right Ctrl toggles; NKRO.
+   - **Reset by VIA** whenever the new firmware was built on a different day, which is the case for every release: your **VIA keymap and macros**. Note them down, or export them in VIA (*Save + Load*), before flashing.
 4. **VIA:** if [VIA](https://usevia.app) does not detect the keyboard on its own, load MonsGeek's design file [`M1_V5_VIA_V3_ANSI.json`](https://files.monsgeek.com/M1_V5_VIA_V3_ANSI.json): *Settings → Show Design tab*, then *Design → Load*.
 
 ### Linux (command line)
