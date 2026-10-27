@@ -120,13 +120,15 @@ Kendi keymap'in için `keymaps/default` klasörünü `keymaps/<ad>` olarak kopya
 İşlemci **WB32**, bootloader `wb32-dfu`. Yükleme **USB kablosuyla** yapılır; kablosuz modlarda yükleme yapılamaz.
 
 1. **Bootloader'a gir** (biri yeterli):
-   - Kablo takılıyken **Fn + Sağ Shift + Esc**. ⚠ Ayarları (VIA keymap, RGB) da sıfırlar.
-   - Kabloyu takarken **Esc**'ye basılı tut (bootmagic). ⚠ Bu da ayarları sıfırlar.
+   - Kablo takılıyken **Fn + Sağ Shift + Esc**. v1.3'ten beri ayarları korur (3. adıma bak).
+   - Kabloyu takarken **Esc**'ye basılı tut (bootmagic). ⚠ Bu tüm ayarları sıfırlar.
    - PCB üzerindeki **reset düğmesine** bas.
 2. **`.bin` dosyasını yükle** (biri yeterli):
    - [QMK Toolbox](https://github.com/qmk/qmk_toolbox/releases): `.bin` dosyasını aç, *Flash*'a bas.
    - Komut satırı, QMK ağacının içinden: `qmk flash -kb monsgeek/m1_v5/m1_v5_us -km default`. Bunun için `wb32-dfu-updater_cli` gerekir; `qmk doctor` ya da `qmk setup` kurar.
-3. Kabloyu çıkarıp tak. Bootloader'a girmek ayarları sıfırladığı için VIA keymap'ini ve RGB ayarlarını yeniden yap.
+3. Kabloyu çıkarıp tak.
+   - **Korunanlar** (Fn + Sağ Shift + Esc ile girildiyse, v1.3 ve sonrası): RGB modu, rengi ve parlaklığı; Fn + G, Fn + W ve Fn + Sağ Ctrl seçimleri; NKRO.
+   - **VIA'nın sıfırladıkları:** Yeni firmware farklı bir günde derlenmişse, ki her sürümde öyle, **VIA keymap'in ve makroların**. Yüklemeden önce not al ya da VIA'dan dışa aktar (*Save + Load*).
 4. **VIA:** [VIA](https://usevia.app) klavyeyi kendiliğinden tanımazsa MonsGeek'in tasarım dosyasını yükle: [`M1_V5_VIA_V3_ANSI.json`](https://files.monsgeek.com/M1_V5_VIA_V3_ANSI.json). Bunun için önce *Settings → Show Design tab*, sonra *Design → Load*.
 
 ### Linux (komut satırı)
