@@ -103,6 +103,20 @@ qmk compile -kb monsgeek/m1_v5/m1_v5_us -km default
 
 Kendi keymap'in için `keymaps/default` klasörünü `keymaps/<ad>` olarak kopyala ve `-km <ad>` ile derle.
 
+### Tarama hızını ölçme (`scanrate` keymap)
+
+Ölçüm amaçlı derleme: varsayılan keymap'e ek olarak **Fn + S**, klavyenin son
+bir saniyede matrisi kaç kez taradığını yazar (ör. `scan 1834`). Bir metin
+düzenleyici açıp Fn + S'ye birkaç kez bas; RGB efektleri, RGB kapalı ve
+kablolu/kablosuz arasında karşılaştır.
+
+```sh
+KEYMAP=scanrate ./build.sh
+```
+
+Her CI koşusu bunu `firmware-scanrate` artifact'i olarak da yükler. Release'lere
+eklenmez.
+
 ### Windows (WSL2)
 
 `build.sh` WSL2'de (örneğin Ubuntu) çalışır. Dikkat edilecekler:

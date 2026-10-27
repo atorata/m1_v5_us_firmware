@@ -103,6 +103,20 @@ If `qmk compile` complains about a missing compiler, run `qmk doctor`. It offers
 
 To use your own keymap, copy `keymaps/default` to `keymaps/<name>` and build with `-km <name>`.
 
+### Measuring the scan rate (`scanrate` keymap)
+
+A measurement build: the default keymap plus **Fn + S**, which types how many
+times the keyboard scanned its matrix in the last second (e.g. `scan 1834`).
+Open a text editor, press Fn + S a few times, and compare RGB effects, RGB off
+and cable vs. wireless.
+
+```sh
+KEYMAP=scanrate ./build.sh
+```
+
+Every CI run also uploads it as the `firmware-scanrate` artifact. It is not
+attached to releases.
+
 ### Windows (WSL2)
 
 `build.sh` works in WSL2 (for example Ubuntu). Keep these in mind:
