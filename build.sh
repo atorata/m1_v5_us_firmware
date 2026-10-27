@@ -34,8 +34,8 @@ if [ ! -d "$QMK/.git" ]; then
 fi
 
 # 2. Only the submodules this keyboard needs
-echo ">> updating submodules (chibios, chibios-contrib, printf)"
-git -C "$QMK" submodule update --init --depth 1 lib/chibios lib/chibios-contrib lib/printf
+echo ">> updating submodules (chibios, chibios-contrib, printf, lufa)"
+git -C "$QMK" submodule update --init --depth 1 lib/chibios lib/chibios-contrib lib/printf lib/lufa
 
 # 3. Reset the stock keyboard folder, then copy this repo over it
 echo ">> copying $FW -> keyboards/$KB"
